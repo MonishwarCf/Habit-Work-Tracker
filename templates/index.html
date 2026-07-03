@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM INTERFACE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --theme-color: rgb(139, 92, 246);
+            --theme-color-glow: rgba(139, 92, 246, 0.35);
+            --theme-color-border: rgba(139, 92, 246, 0.15);
+            --theme-color-rgb: 139, 92, 246;
+        }
+        body {
+            background-color: #000000;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.005) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.005) 1px, transparent 1px);
+            background-size: 32px 32px;
+            font-family: 'Rajdhani', sans-serif;
+            color: #cbd5e1;
+            overflow-x: hidden;
+        }
+        .sys-font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .hud-panel {
+            background: rgba(2, 2, 5, 0.98);
+            border: 1px solid var(--theme-color-border);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.95), 0 0 10px var(--theme-color-glow) inset;
+        }
+        .hud-panel-red {
+            background: rgba(8, 1, 1, 0.98);
+            border: 1px solid rgba(239, 68, 68, 0.18);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.95), 0 0 10px rgba(239, 68, 68, 0.08) inset;
+        }
+        .scanline-header {
+            position: relative;
+        }
+        .scanline-header::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255, 255, 255, 0.01),
+                rgba(255, 255, 255, 0.01) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+        }
+        .progress-bar-theme {
+            background: linear-gradient(90deg, #4c1d95, var(--theme-color));
+            box-shadow: 0 0 10px var(--theme-color-glow);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .red-gate-card {
+            background: linear-gradient(135deg, rgba(16, 1, 1, 0.98) 0%, rgba(3, 0, 0, 0.99) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        .red-gate-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(239, 68, 68, 0.015),
+                rgba(239, 68, 68, 0.015) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+            animation: panDiagonal 15s linear infinite;
+        }
+        @keyframes panDiagonal {
+            from { transform: translate(0, 0); }
+            to { transform: translate(10%, 10%); }
+        }
+        .red-gate-pulse {
+            animation: borderRedPulse 1.5s infinite alternate;
+        }
+        @keyframes borderRedPulse {
+            from {
+                border-color: rgba(239, 68, 68, 0.2);
+                box-shadow: 0 0 10px rgba(239, 68, 68, 0.03) inset;
+            }
+            to {
+                border-color: rgba(239, 68, 68, 0.55);
+                box-shadow: 0 0 20px rgba(239, 68, 68, 0.15) inset;
+            }
+        }
+        .terminal-slide {
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .terminal-slide.open {
+            transform: translateY(0);
+        }
+        .custom-checkbox:checked + label .checkbox-box {
+            background-color: var(--theme-color);
+            border-color: var(--theme-color);
+            box-shadow: 0 0 8px var(--theme-color-glow);
+        }
+        .custom-checkbox:checked + label span {
+            text-decoration: line-through;
+            color: rgba(203, 213, 225, 0.3);
+        }
+        .theme-text {
+            color: var(--theme-color);
+        }
+        .theme-border {
+            border-color: var(--theme-color);
+        }
+        .theme-glow {
+            text-shadow: 0 0 8px var(--theme-color-glow);
+        }
+        .theme-btn {
+            border: 1px solid var(--theme-color);
+            color: var(--theme-color);
+            background: transparent;
+            transition: all 0.15s ease-in-out;
+        }
+        .theme-btn:hover {
+            background: var(--theme-color-glow);
+            box-shadow: 0 0 10px var(--theme-color-glow);
+        }
+        .hud-card {
+            background: rgba(2, 2, 5, 0.6);
+            border: 1px solid var(--theme-color-border);
+            transition: all 0.15s ease-in-out;
+        }
+        .hud-card:hover {
+            border-color: var(--theme-color);
+            box-shadow: 0 0 10px var(--theme-color-glow);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-6 flex flex-col gap-6 relative">
+    <svg class="hidden">
+        <defs>
+            <linearGradient id="multicrystal" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f0ff" />
+                <stop offset="50%" stop-color="#a855f7" />
+                <stop offset="100%" stop-color="#ff007f" />
+            </linearGradient>
+            <linearGradient id="goldcrystal" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffe259" />
+                <stop offset="100%" stop-color="#ffa751" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <canvas id="particleCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+    <div id="flash" class="fixed inset-0 pointer-events-none opacity-0 z-50 transition-opacity duration-300 mix-blend-screen"></div>
+
+    <header class="flex justify-between items-center py-4 px-6 hud-panel scanline-header relative z-10">
+        <div class="flex items-center gap-6">
+            <button onclick="toggleAdmin()" class="text-slate-400 hover:theme-text transition duration-150 text-xl font-mono">⚙</button>
+            <h1 class="text-2xl font-black tracking-widest theme-text theme-glow sys-font-orbitron uppercase select-none">
+                SYSTEM INTERFACE
+            </h1>
+        </div>
+        <div id="dateDisplay" class="sys-font-orbitron text-xs theme-text tracking-wider"></div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 relative z-10">
+        <div class="lg:col-span-3 flex flex-col gap-6">
+            <div class="hud-panel p-6 flex flex-col gap-6">
+                <div class="flex flex-col gap-3">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-black uppercase tracking-wider text-slate-400 sys-font-orbitron">PLAYER PROFILE &gt;</span>
+                    </div>
+                    <!-- Avatar Frame with glowing purple theme border -->
+                    <div class="relative w-full aspect-square border border-[var(--theme-color-border)] hover:border-[var(--theme-color)] transition duration-300 overflow-hidden shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                        <img src="/avatar.jpg" alt="Shadow Monarch Avatar" class="w-full h-full object-cover">
+                        <!-- Shadow overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <h2 id="playerName" onclick="openActionModal('name')" class="text-xl font-black uppercase tracking-wider text-white hover:theme-text cursor-pointer transition duration-150 sys-font-orbitron"></h2>
+                        <span id="playerRank" class="sys-font-orbitron text-xs font-black px-3 py-0.5 border"></span>
+                    </div>
+                    <div class="text-center italic text-xs text-purple-400/90 font-mono mt-0.5 select-none tracking-wide">
+                        "I don't chase the system. I outgrow it."
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs tracking-wider text-slate-400 font-mono">
+                        <span>LEVEL <span id="playerLevel" class="text-white font-bold"></span></span>
+                        <span><span id="playerXp" class="theme-text"></span> / <span id="playerXpReq"></span> XP</span>
+                    </div>
+                    <div class="w-full bg-slate-950 border border-slate-900 h-2.5 overflow-hidden">
+                        <div id="xpBar" class="h-full progress-bar-theme" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="space-y-3 font-mono text-xs border-t border-b border-slate-900 py-4">
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-slate-400">INT (INTELLECT)</span>
+                            <span id="playerInt" class="theme-text font-bold"></span>
+                        </div>
+                        <div class="w-full bg-slate-950 border border-slate-900 h-1.5">
+                            <div id="barInt" class="h-full bg-[var(--theme-color)]" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-slate-400">AGI (AGILITY)</span>
+                            <span id="playerAgi" class="text-green-400 font-bold"></span>
+                        </div>
+                        <div class="w-full bg-slate-950 border border-slate-900 h-1.5">
+                            <div id="barAgi" class="h-full bg-green-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-slate-400">WIL (WILLPOWER)</span>
+                            <span id="playerWil" class="text-purple-400 font-bold"></span>
+                        </div>
+                        <div class="w-full bg-slate-950 border border-slate-900 h-1.5">
+                            <div id="barWil" class="h-full bg-purple-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center bg-slate-950/80 p-3 border border-slate-900 font-mono">
+                    <span class="text-yellow-400 font-bold text-xs tracking-wider">◈ REVENUE GOLD</span>
+                    <span id="playerGold" class="text-yellow-400 font-bold text-base"></span>
+                </div>
+
+                <div id="streakContainer" class="p-3 border text-center font-mono">
+                    <div class="text-[10px] theme-text uppercase tracking-widest font-bold">Multiplier Streak</div>
+                    <div id="playerStreak" class="text-2xl font-black theme-text theme-glow sys-font-orbitron mt-1"></div>
+                    <div id="streakLastDate" class="text-[9px] text-slate-500 mt-1 uppercase tracking-wider font-bold"></div>
+                    <div id="streakWarning" class="text-[9px] text-red-500 mt-2 font-bold hidden uppercase tracking-wider animate-pulse"></div>
+                </div>
+            </div>
+
+            <div id="inventoryPanel" class="hud-panel p-5 flex-1 flex flex-col min-h-[220px]">
+                <h3 class="text-sm font-bold theme-text mb-4 tracking-widest border-b border-slate-900 pb-2 uppercase sys-font-orbitron">
+                    INVENTORY COLLECTIBLES
+                </h3>
+                <div id="inventoryList" class="grid grid-cols-4 gap-2.5"></div>
+                <div id="inventoryDetail" class="mt-4 p-3 border border-slate-900 bg-slate-950/20 text-xs font-mono hidden">
+                    <div class="font-bold theme-text" id="invDetailName"></div>
+                    <div class="text-slate-400 mt-1 leading-normal" id="invDetailEffect"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-6 flex flex-col gap-6">
+            <div class="hud-panel-red p-6 flex flex-col gap-4">
+                <div class="flex justify-between items-center border-b border-red-950/40 pb-3">
+                    <h3 class="text-base font-black text-red-500 tracking-widest flex items-center gap-2 sys-font-orbitron uppercase">
+                        <span>▣</span> ACTIVE RED GATES
+                    </h3>
+                    <button onclick="openActionModal('gate')" class="text-[10px] border border-red-500 text-red-500 px-3 py-1 hover:bg-red-950/30 transition duration-150 uppercase tracking-wider font-mono">
+                        OPEN RED GATE
+                    </button>
+                </div>
+                <div id="gatesList" class="flex flex-col gap-4"></div>
+            </div>
+
+            <div class="hud-panel p-6 flex-1 flex flex-col">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-900 pb-3">
+                    <h3 class="text-base font-black theme-text tracking-widest sys-font-orbitron uppercase">
+                        ▣ DAILY OBJECTIVES
+                    </h3>
+                    <button onclick="openActionModal('quest')" class="text-[10px] theme-btn px-3 py-1 transition duration-150 uppercase tracking-wider font-mono">
+                        ADD QUEST
+                    </button>
+                </div>
+                <div id="questsList" class="flex flex-col gap-2.5 flex-1"></div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-3 flex flex-col gap-6">
+            <div id="projectsPanel" class="hud-panel p-5 flex flex-col gap-3 min-h-[220px]">
+                <div class="flex justify-between items-center border-b border-slate-900 pb-2">
+                    <h3 id="projectsHeading" class="text-sm font-black tracking-widest sys-font-orbitron uppercase"></h3>
+                    <button onclick="openActionModal('project')" class="text-slate-400 hover:theme-text transition text-lg font-mono">+</button>
+                </div>
+                <div id="projectsList" class="flex flex-col gap-3 overflow-y-auto flex-1 pr-1"></div>
+            </div>
+
+            <div class="hud-panel p-5 flex-1 flex flex-col min-h-[280px]">
+                <div class="flex justify-between items-center mb-3 border-b border-slate-900 pb-2">
+                    <h3 class="text-sm font-black text-slate-300 tracking-widest sys-font-orbitron uppercase">
+                        ▣ SYSTEM SHOP
+                    </h3>
+                    <button onclick="openActionModal('shop')" class="text-slate-500 hover:text-white transition text-lg font-mono">+</button>
+                </div>
+                <div id="shopList" class="flex flex-col gap-2.5 overflow-y-auto flex-1 pr-1"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminConsole" class="terminal-slide fixed bottom-0 left-0 right-0 h-72 bg-black border-t border-green-500 p-4 z-40 font-mono flex flex-col">
+        <div class="flex justify-between items-center text-green-500 border-b border-green-950 pb-2 mb-2">
+            <span class="text-xs tracking-widest">SYSTEM ADMINISTRATIVE OVERRIDE</span>
+            <button onclick="toggleAdmin()" class="text-slate-500 hover:text-white text-sm">&times;</button>
+        </div>
+        <div id="adminLogs" class="flex-1 overflow-y-auto text-xs text-green-400/80 flex flex-col gap-1 mb-2"></div>
+        <div class="relative">
+            <div id="autocompleteOverlay" class="absolute bottom-full left-0 right-0 bg-black border border-green-900 p-1 text-xs text-green-500 hidden flex-col max-h-32 overflow-y-auto z-50"></div>
+            <input type="text" id="adminInput" class="w-full bg-slate-950 border border-green-900 text-green-400 p-2 outline-none focus:border-green-500 text-sm" placeholder="> Enter admin directive (e.g. --help, /player_info, /add_xp 500)">
+        </div>
+    </div>
+
+    <div id="actionModal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center hidden">
+        <div class="p-6 border theme-border bg-slate-950 max-w-md w-full shadow-[0_0_30px_var(--theme-color-glow)]">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-900 pb-2">
+                <h3 id="modalTitle" class="text-base font-black font-mono theme-text tracking-wider uppercase"></h3>
+                <button onclick="closeActionModal()" class="text-slate-500 hover:text-white text-lg">&times;</button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <div id="crystalModal" class="fixed inset-0 bg-black/95 z-50 items-center justify-center hidden">
+        <div class="text-center flex flex-col items-center gap-6 p-10 hud-panel border-purple-500 max-w-sm w-full" style="box-shadow: 0 0 50px rgba(168, 85, 247, 0.25) inset;">
+            <h2 class="text-3xl font-black text-purple-400 tracking-widest uppercase sys-font-orbitron">LOOT ACQUIRED</h2>
+            <div class="my-4" id="crystalEmojiContainer"></div>
+            <div class="text-xl font-bold text-white uppercase font-mono tracking-wide" id="crystalName"></div>
+            <div class="text-purple-300 text-xs font-mono" id="crystalEffect"></div>
+            <button onclick="closeCrystalModal()" class="mt-4 px-8 py-2 bg-purple-950/40 border border-purple-500 text-purple-300 hover:bg-purple-900/60 font-mono text-xs uppercase tracking-wider transition">CONFIRM</button>
+        </div>
+    </div>
+
+    <div id="levelUpOverlay" class="fixed inset-0 bg-black/95 z-50 flex flex-col items-center justify-center hidden">
+        <div class="text-center p-8 border theme-border bg-slate-950 max-w-xs w-full shadow-[0_0_50px_var(--theme-color-glow)]">
+            <h2 class="text-4xl font-black tracking-widest theme-text sys-font-orbitron animate-pulse">LEVEL UP</h2>
+            <div class="h-px bg-slate-800 my-4"></div>
+            <div class="text-xs text-slate-400 font-mono uppercase tracking-wider">Capabilities Expanded</div>
+            <div class="text-6xl font-black text-white my-6 sys-font-orbitron" id="levelUpValue"></div>
+            <button onclick="closeLevelUp()" class="px-8 py-2.5 theme-btn font-mono tracking-widest text-xs uppercase transition">CONFIRM</button>
+        </div>
+    </div>
+
+    <div id="rankUpOverlay" class="fixed inset-0 bg-black/95 z-50 flex flex-col items-center justify-center hidden">
+        <div class="text-center p-8 border border-red-600 bg-slate-950 max-w-xs w-full shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+            <h2 class="text-4xl font-black tracking-widest text-red-500 sys-font-orbitron animate-pulse">RANK UP</h2>
+            <div class="h-px bg-red-950 my-4"></div>
+            <div class="text-xs text-slate-400 font-mono uppercase tracking-wider">System Evaluation Completed</div>
+            <div class="text-5xl font-black text-red-400 my-6 sys-font-orbitron" id="rankUpValue"></div>
+            <button onclick="closeRankUp()" class="px-8 py-2.5 border border-red-600 text-red-500 hover:bg-red-950 font-mono tracking-widest text-xs uppercase transition">CONFIRM</button>
+        </div>
+    </div>
+
+    <div id="notificationsContainer" class="fixed top-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <script>
+        const COMMANDS = [
+            '/help', '/player_info', '/set_level', '/add_xp', '/add_gold', 
+            '/set_gold', '/set_streak', '/reset_streak', '/set_name', 
+            '/set_attr', '/complete_all_quests', '/reset_quests', 
+            '/drop_crystal', '/clear_inventory', '/wipe_gates', 
+            '/fail_gates', '/offset_date', '/reset_date', '/db_stats', '/reset_all'
+        ];
+
+        const API_BASE = window.location.origin === 'null' || window.location.protocol === 'file:' ? 'http://127.0.0.1:8000' : '';
+        let serverSystemDate = null;
+
+        const API = {
+            async get(url) { const r = await fetch(API_BASE + url); return r.json(); },
+            async post(url, data) {
+                const r = await fetch(API_BASE + url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: data ? JSON.stringify(data) : null });
+                return r.json();
+            },
+            async put(url, data) {
+                const r = await fetch(API_BASE + url, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: data ? JSON.stringify(data) : null });
+                return r.json();
+            },
+            async del(url) { const r = await fetch(API_BASE + url, { method: 'DELETE' }); return r.json(); }
+        };
+
+        const AudioSys = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            playTone(options = {}) {
+                // Sound effects disabled
+                return;
+            },
+            quest() {
+                this.playTone({ freq: 70, type: 'sine', duration: 0.35, gainStart: 0.25 });
+                this.playTone({ freq: 850, type: 'triangle', duration: 0.18, gainStart: 0.08, delay: 0.04, pitchTarget: 450 });
+            },
+            buy() {
+                this.playTone({ freq: 240, type: 'sawtooth', duration: 0.06, gainStart: 0.08, gainEnd: 0.01 });
+                this.playTone({ freq: 140, type: 'triangle', duration: 0.12, gainStart: 0.15, delay: 0.03 });
+            },
+            crystal() {
+                [750, 950, 1150, 1450].forEach((f, i) => {
+                    this.playTone({ freq: f, type: 'sine', duration: 0.25, gainStart: 0.05, delay: i * 0.05 });
+                });
+                this.playTone({ freq: 1750, type: 'triangle', duration: 0.45, gainStart: 0.06, delay: 0.2, pitchTarget: 2100 });
+            },
+            levelUp() {
+                this.playTone({ freq: 45, type: 'sine', duration: 0.8, gainStart: 0.35 });
+                this.playTone({ freq: 140, type: 'sawtooth', duration: 0.6, gainStart: 0.12, pitchTarget: 280 });
+                this.playTone({ freq: 210, type: 'triangle', duration: 0.7, gainStart: 0.12, delay: 0.08, pitchTarget: 420 });
+                this.playTone({ freq: 315, type: 'sine', duration: 0.8, gainStart: 0.08, delay: 0.16, pitchTarget: 630 });
+            },
+            rankUp() {
+                this.playTone({ freq: 35, type: 'sine', duration: 1.4, gainStart: 0.45 });
+                this.playTone({ freq: 85, type: 'sawtooth', duration: 1.1, gainStart: 0.18, pitchTarget: 170 });
+                this.playTone({ freq: 125, type: 'sawtooth', duration: 1.1, gainStart: 0.18, delay: 0.08, pitchTarget: 250 });
+                [290, 390, 490, 590, 790].forEach((f, i) => {
+                    this.playTone({ freq: f, type: 'triangle', duration: 0.7, gainStart: 0.06, delay: 0.25 + i * 0.08, pitchTarget: f * 1.4 });
+                });
+            },
+            error() {
+                this.playTone({ freq: 110, type: 'sawtooth', duration: 0.18, gainStart: 0.2 });
+                this.playTone({ freq: 110, type: 'sawtooth', duration: 0.18, gainStart: 0.2, delay: 0.22 });
+            }
+        };
+
+        let activeGates = [];
+        let commandHistory = [];
+        let historyIndex = -1;
+
+        function logAdmin(msg, type = 'info') {
+            const logs = document.getElementById('adminLogs');
+            let colorClass = 'text-green-400';
+            if (type === 'error') colorClass = 'text-red-500';
+            else if (type === 'success') colorClass = 'text-cyan-400';
+            else if (type === 'input') colorClass = 'text-slate-500';
+            const strMsg = String(msg || '');
+            const cleanMsg = strMsg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            logs.innerHTML += `<div class="${colorClass} font-mono text-xs whitespace-pre-wrap">[SYSTEM] ${cleanMsg}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function showSystemNotification(title, message, type = 'info') {
+            const container = document.getElementById('notificationsContainer');
+            const el = document.createElement('div');
+            let borderColor = 'border-[var(--theme-color)]';
+            let textColor = 'theme-text';
+            let glowColor = 'var(--theme-color-glow)';
+            let bgGradient = 'from-slate-950 to-slate-900';
+            if (type === 'danger' || type === 'red_gate') {
+                borderColor = 'border-red-600';
+                textColor = 'text-red-500';
+                glowColor = 'rgba(239, 68, 68, 0.15)';
+            } else if (type === 'gold' || type === 'rank_up') {
+                borderColor = 'border-amber-500';
+                textColor = 'text-amber-400';
+                glowColor = 'rgba(245, 158, 11, 0.15)';
+            } else if (type === 'crystal') {
+                borderColor = 'border-purple-500';
+                textColor = 'text-purple-400';
+                glowColor = 'rgba(168, 85, 247, 0.15)';
+            }
+            el.className = `w-80 p-4 border bg-gradient-to-r ${bgGradient} ${borderColor} shadow-lg pointer-events-auto transition-all duration-300 transform translate-x-full opacity-0`;
+            el.style.boxShadow = `0 0 15px ${glowColor} inset, 0 4px 20px rgba(0, 0, 0, 0.8)`;
+            el.innerHTML = `
+                <div class="flex justify-between items-start font-mono">
+                    <div class="flex-1 mr-2">
+                        <div class="text-[9px] uppercase tracking-widest text-slate-500 font-bold">SYSTEM REPORT</div>
+                        <div class="font-bold text-sm ${textColor} tracking-wider uppercase mt-0.5">${title}</div>
+                        <div class="text-slate-300 text-xs mt-1 leading-relaxed">${message}</div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-slate-500 hover:text-white text-sm">&times;</button>
+                </div>
+            `;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.classList.remove('translate-x-full', 'opacity-0');
+            }, 30);
+            setTimeout(() => {
+                el.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => el.remove(), 400);
+            }, 4500);
+        }
+
+        async function loadAll() {
+            try {
+                const [player, quests, gates, projects, shop, inv] = await Promise.all([
+                    API.get('/api/player'), API.get('/api/quests'), API.get('/api/red_gates'),
+                    API.get('/api/projects'), API.get('/api/shop'), API.get('/api/inventory')
+                ]);
+                updateThemeColors(player.level);
+                renderPlayer(player);
+                renderQuests(quests);
+                renderGates(gates);
+                renderProjects(projects);
+                renderShop(shop, player.gold);
+                renderInventory(inv);
+            } catch (e) { 
+                console.error(e);
+                logAdmin('Error compiling state matrices: ' + e.message, 'error'); 
+            }
+        }
+
+        function updateThemeColors(level) {
+            const f = Math.max(0, Math.min(1, (level - 5) / 85));
+            // Shift color dynamically from electric blue to shadow monarch purple
+            const r = Math.round(59 + 80 * f); 
+            const g = Math.round(130 - 38 * f);  
+            const b = Math.round(246 - 0 * f); 
+            const root = document.documentElement;
+            root.style.setProperty('--theme-color', `rgb(${r}, ${g}, ${b})`);
+            root.style.setProperty('--theme-color-glow', `rgba(${r}, ${g}, ${b}, 0.35)`);
+            root.style.setProperty('--theme-color-border', `rgba(${r}, ${g}, ${b}, 0.15)`);
+            root.style.setProperty('--theme-color-rgb', `${r}, ${g}, ${b}`);
+
+            const streak = document.getElementById('streakContainer');
+            if (streak) {
+                streak.style.borderColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
+                streak.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.02)`;
+            }
+            const invDetail = document.getElementById('inventoryDetail');
+            if (invDetail) {
+                invDetail.style.borderColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
+            }
+        }
+
+        function renderPlayer(p) {
+            document.getElementById('playerName').textContent = p.name;
+            document.getElementById('playerLevel').textContent = p.level;
+            document.getElementById('playerXp').textContent = p.xp;
+            document.getElementById('playerXpReq').textContent = p.xp_required;
+            document.getElementById('xpBar').style.width = `${(p.xp / p.xp_required) * 100}%`;
+            
+            const rankEl = document.getElementById('playerRank');
+            rankEl.textContent = p.rank;
+            rankEl.className = `sys-font-orbitron text-xs font-black px-3 py-0.5 border ${
+                p.rank === 'S-Rank' ? 'border-red-500 text-red-500 shadow-[0_0_10px_rgba(239,68,68,0.2)] animate-pulse' :
+                p.rank === 'A-Rank' ? 'border-yellow-500 text-yellow-500 shadow-[0_0_10px_rgba(245,158,11,0.2)]' :
+                p.rank === 'B-Rank' ? 'border-purple-500 text-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.2)]' :
+                p.rank === 'C-Rank' ? 'border-blue-500 text-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.2)]' :
+                p.rank === 'D-Rank' ? 'border-green-500 text-green-500 shadow-[0_0_10px_rgba(34,197,94,0.2)]' : 'border-gray-500 text-gray-400'
+            }`;
+
+            document.getElementById('playerInt').textContent = p.intel;
+            document.getElementById('playerAgi').textContent = p.agi;
+            document.getElementById('playerWil').textContent = p.wil;
+
+            const maxStat = 100;
+            document.getElementById('barInt').style.width = Math.min(100, (p.intel / maxStat) * 100) + '%';
+            document.getElementById('barAgi').style.width = Math.min(100, (p.agi / maxStat) * 100) + '%';
+            document.getElementById('barWil').style.width = Math.min(100, (p.wil / maxStat) * 100) + '%';
+
+            document.getElementById('playerGold').textContent = p.gold;
+            document.getElementById('playerStreak').textContent = `${p.streak_count} DAYS ${p.streak_multiplier.toFixed(2)}x`;
+            if (p.system_date) {
+                const parts = p.system_date.split('-');
+                if (parts.length === 3) {
+                    serverSystemDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                }
+            }
+            const lastDateEl = document.getElementById('streakLastDate');
+            if (lastDateEl) {
+                lastDateEl.textContent = p.last_completed_date ? `LAST COMPLETE: ${p.last_completed_date}` : 'NO COMPLETED OBJECTIVES YET';
+            }
+            
+            const streakWarning = document.getElementById('streakWarning');
+            if (p.missed_yesterday === 1) {
+                streakWarning.classList.remove('hidden');
+                streakWarning.textContent = 'STREAK CRITICAL // CONSECUTIVE FAILURE IMMINENT';
+            } else {
+                streakWarning.classList.add('hidden');
+            }
+
+            const projHeading = document.getElementById('projectsHeading');
+            if (projHeading) {
+                let headingText = '▣ S-RANK RAIDS';
+                let headingColor = 'text-amber-500';
+                
+                if (p.rank === 'E-Rank') {
+                    headingText = '▣ E-RANK COMMISSIONS';
+                    headingColor = 'text-slate-400';
+                } else if (p.rank === 'D-Rank') {
+                    headingText = '▣ D-RANK SKIRMISHES';
+                    headingColor = 'text-green-500';
+                } else if (p.rank === 'C-Rank') {
+                    headingText = '▣ C-RANK DUNGEONS';
+                    headingColor = 'text-blue-400';
+                } else if (p.rank === 'B-Rank') {
+                    headingText = '▣ B-RANK SUBJUGATIONS';
+                    headingColor = 'text-purple-400';
+                } else if (p.rank === 'A-Rank') {
+                    headingText = '▣ A-RANK CONQUESTS';
+                    headingColor = 'text-amber-500';
+                }
+                
+                projHeading.textContent = headingText;
+                projHeading.className = `text-sm font-black tracking-widest sys-font-orbitron uppercase ${headingColor}`;
+            }
+        }
+
+        function renderQuests(quests) {
+            const container = document.getElementById('questsList');
+            if (quests.length === 0) {
+                container.innerHTML = '<div class="text-slate-500 text-sm font-mono p-4">No directive sequences registered.</div>';
+            } else {
+                container.innerHTML = quests.map(q => {
+                    let badgeColor = 'border-[var(--theme-color)] theme-text';
+                    if (q.attribute === 'agi') badgeColor = 'border-green-500 text-green-400';
+                    else if (q.attribute === 'wil') badgeColor = 'border-purple-500 text-purple-400';
+                    return `
+                        <div class="flex justify-between items-center hud-card p-3 ${q.is_completed ? 'opacity-40' : ''}">
+                            <div class="flex gap-3 items-center">
+                                <input type="checkbox" id="q-check-${q.id}" ${q.is_completed ? 'checked disabled' : ''} onchange="completeQuest(${q.id})" class="custom-checkbox hidden">
+                                <label for="q-check-${q.id}" class="flex items-center gap-3 cursor-pointer select-none">
+                                    <span class="checkbox-box w-4 h-4 border border-slate-700 flex items-center justify-center transition-all bg-slate-950">
+                                        ${q.is_completed ? '<span class="text-slate-950 font-black text-[10px]">&#10003;</span>' : ''}
+                                    </span>
+                                    <span class="font-mono text-sm tracking-wide text-slate-200">${q.title}</span>
+                                </label>
+                            </div>
+                            <div class="flex gap-3 items-center">
+                                <span class="px-2 py-0.5 border text-[9px] font-mono font-bold tracking-wider ${badgeColor}">${q.attribute.toUpperCase()}</span>
+                                <span class="text-xs font-mono theme-text font-bold">+${q.xp_reward} XP</span>
+                                <span class="text-xs font-mono text-yellow-500 font-bold">+${q.gold_reward} G</span>
+                                <button onclick="deleteQuest(${q.id})" class="text-slate-600 hover:text-red-500 text-lg transition duration-100">&times;</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function renderGates(gates) {
+            const container = document.getElementById('gatesList');
+            activeGates = gates;
+            if (gates.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center p-8 border border-dashed border-red-950/30 bg-red-950/5">
+                        <div class="text-red-900 text-3xl mb-2 font-mono">☠</div>
+                        <div class="text-red-400/50 font-mono text-xs tracking-wider uppercase select-none font-bold">No active dimensional deviations detected</div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = gates.map(g => `
+                    <div class="red-gate-card red-gate-pulse p-4 flex flex-col gap-3 relative">
+                        <div class="flex justify-between items-start z-10">
+                            <div>
+                                <div class="text-[9px] font-mono text-red-500 tracking-widest uppercase font-bold">RED GATE GATEWAY</div>
+                                <div class="text-base font-bold font-mono text-white mt-0.5">${g.title}</div>
+                            </div>
+                            <span class="px-2 py-0.5 border border-amber-600 bg-amber-950/30 text-amber-500 font-mono text-[9px] font-bold tracking-wider">${g.reward_multiplier}x REWARDS</span>
+                        </div>
+                        <div class="z-10 py-1">
+                            <div id="gate-timer-${g.id}" class="text-red-500 font-mono text-xs tracking-widest font-black uppercase">Calculating...</div>
+                        </div>
+                        <div class="flex justify-between items-center z-10 border-t border-red-950/30 pt-3 mt-1">
+                            <div class="text-[10px] font-mono text-red-400 leading-normal">
+                                <div>REWARD MULTIPLIER: +${100 * g.reward_multiplier} XP / +${50 * g.reward_multiplier} G</div>
+                                <div class="text-red-600/70 text-[9px]">PENALTY: -${g.penalty_amount} XP ON EXPIRATION</div>
+                            </div>
+                            <button onclick="completeGate(${g.id})" class="px-4 py-1.5 border border-red-500 text-red-500 hover:bg-red-950/40 text-xs font-mono font-bold tracking-wider uppercase transition">ENTER GATE</button>
+                        </div>
+                    </div>
+                `).join('');
+                updateTimers();
+            }
+        }
+
+        function renderProjects(projects) {
+            const container = document.getElementById('projectsList');
+            const rankText = document.getElementById('playerRank').textContent || 'E-Rank';
+            const campaignLabel = rankText === 'E-Rank' ? 'COMMISSION' :
+                                  rankText === 'D-Rank' ? 'SKIRMISH' :
+                                  rankText === 'C-Rank' ? 'DUNGEON' :
+                                  rankText === 'B-Rank' ? 'SUBJUGATION' :
+                                  rankText === 'A-Rank' ? 'CONQUEST' : 'S-RANK RAID';
+            
+            if (projects.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center p-6 border border-dashed border-slate-900 bg-slate-950/20">
+                        <div class="text-slate-800 text-2xl mb-1 font-mono">◪</div>
+                        <div class="text-slate-600 font-mono text-xs tracking-wider uppercase select-none font-bold">No active campaigns</div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = projects.map(p => {
+                    const isSRank = campaignLabel === 'S-RANK RAID';
+                    const cardClass = isSRank ? 'border border-amber-500/30 hover:border-amber-500 hover:shadow-[0_0_10px_rgba(245,158,11,0.2)] bg-slate-950/45' : 'hud-card';
+                    return `
+                        <div class="p-3 flex flex-col gap-2 transition duration-150 ${cardClass}">
+                            <div class="flex justify-between items-start">
+                                <span class="font-bold text-slate-300 font-mono text-xs tracking-wider uppercase">${p.title}</span>
+                                <span class="text-[8px] font-mono text-slate-500 font-bold border border-slate-800 px-1 py-0.5">${campaignLabel}</span>
+                            </div>
+                            <div class="text-xs text-slate-400 font-mono leading-relaxed">${p.description}</div>
+                            <div class="flex justify-between items-center border-t border-slate-900/50 pt-2 mt-1">
+                                <div class="flex gap-2 text-[9px] font-mono text-slate-500 font-bold">
+                                    <span class="theme-text">+${p.reward_xp} XP</span>
+                                    <span class="text-yellow-500">+${p.reward_gold} G</span>
+                                </div>
+                                <button onclick="completeProject(${p.id})" class="px-3 py-1 border border-slate-800 hover:theme-text text-[9px] font-mono font-bold tracking-wider uppercase transition font-black">INITIATE</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function renderShop(items, pGold) {
+            const container = document.getElementById('shopList');
+            if (items.length === 0) {
+                container.innerHTML = '<div class="text-slate-500 text-sm font-mono p-4">No commodities cataloged.</div>';
+            } else {
+                container.innerHTML = items.map(i => {
+                    const canAfford = pGold >= i.cost;
+                    return `
+                        <div class="flex justify-between items-center hud-card p-2">
+                            <div class="flex flex-col">
+                                <span class="text-slate-200 font-mono text-xs tracking-wide">${i.name}</span>
+                                <span class="text-[9px] font-mono ${canAfford ? 'text-yellow-500 font-bold' : 'text-slate-600'}">◈ ${i.cost} GOLD</span>
+                            </div>
+                            <div class="flex gap-2 items-center">
+                                <button onclick="buyItem(${i.id})" class="px-2.5 py-1 border ${canAfford ? 'border-[var(--theme-color)] theme-text hover:bg-cyan-950/40 cursor-pointer' : 'border-slate-800 text-slate-600 cursor-not-allowed'} text-[9px] font-mono font-bold uppercase transition" ${canAfford ? '' : 'disabled'}>ACQUIRE</button>
+                                <button onclick="deleteShopItem(${i.id})" class="text-slate-600 hover:text-red-500 text-lg transition duration-100">&times;</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function renderInventory(inv) {
+            const container = document.getElementById('inventoryList');
+            const totalSlots = Math.max(12, Math.ceil(inv.length / 4) * 4);
+            let slotsHtml = '';
+            for (let i = 0; i < totalSlots; i++) {
+                if (i < inv.length) {
+                    const item = inv[i];
+                    const isRune = item.type === 'rune';
+                    const gradient = isRune ? 'url(#multicrystal)' : 'url(#goldcrystal)';
+                    const hoverClass = isRune ? 'border-purple-950/40 hover:border-purple-500 hover:shadow-[0_0_12px_rgba(168,85,247,0.45)] bg-gradient-to-br from-purple-950/5 to-slate-950/20' : 'border-amber-950/40 hover:border-amber-500 hover:shadow-[0_0_12px_rgba(245,158,11,0.45)] bg-gradient-to-br from-amber-950/5 to-slate-950/20';
+                    const label = isRune ? 'RN' : 'ES';
+                    const labelColor = isRune ? 'text-purple-400' : 'text-amber-400';
+                    const svgContent = isRune ? `
+                        <svg class="w-9 h-9" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="${gradient}" stroke-width="1.5" stroke-dasharray="10 8" opacity="0.65" style="animation: spin 20s linear infinite; transform-origin: 50px 50px;"/>
+                            <circle cx="50" cy="50" r="30" fill="none" stroke="${gradient}" stroke-width="1" stroke-opacity="0.2"/>
+                            <polygon points="50,22 74,65 26,65" fill="${gradient}" fill-opacity="0.25" stroke="${gradient}" stroke-width="1.5"/>
+                            <polygon points="50,78 74,35 26,35" fill="none" stroke="${gradient}" stroke-width="1" stroke-opacity="0.4"/>
+                            <circle cx="50" cy="50" r="4" fill="${gradient}"/>
+                        </svg>
+                    ` : `
+                        <svg class="w-9 h-9" viewBox="0 0 100 100">
+                            <polygon points="50,15 80,45 50,85 20,45" fill="${gradient}" fill-opacity="0.08" stroke="${gradient}" stroke-width="2"/>
+                            <polygon points="50,15 50,85" stroke="${gradient}" stroke-width="1" stroke-opacity="0.4"/>
+                            <polygon points="20,45 80,45" stroke="${gradient}" stroke-width="1" stroke-opacity="0.4"/>
+                            <polygon points="50,15 35,45 50,85" fill="${gradient}" fill-opacity="0.12" stroke="none"/>
+                            <polygon points="50,15 65,45 50,85" fill="${gradient}" fill-opacity="0.2" stroke="none"/>
+                            <circle cx="28" cy="28" r="1.5" fill="#ffffff" opacity="0.75"/>
+                            <circle cx="72" cy="72" r="1.5" fill="#ffffff" opacity="0.75"/>
+                        </svg>
+                    `;
+                    const escapedName = (item.name || '').replace(/'/g, "\\'");
+                    const escapedEffect = (item.effect || '').replace(/'/g, "\\'");
+                    slotsHtml += `
+                        <div onclick="selectInventoryItem('${escapedName}', '${escapedEffect}')" class="aspect-square border ${hoverClass} transition duration-200 flex items-center justify-center cursor-pointer relative group overflow-hidden">
+                            <span class="absolute top-1 left-1.5 text-[7px] font-mono ${labelColor} opacity-40 select-none tracking-wider">${label}</span>
+                            <span class="absolute bottom-1 right-1.5 text-[7px] font-mono text-slate-500 opacity-40 select-none">${(i+1).toString().padStart(2, '0')}</span>
+                            ${svgContent}
+                        </div>
+                    `;
+                } else {
+                    slotsHtml += `
+                        <div class="aspect-square border border-slate-950/60 bg-slate-950/10 flex items-center justify-center relative select-none">
+                            <span class="absolute bottom-1 right-1.5 text-[7px] font-mono text-slate-850 select-none">${(i+1).toString().padStart(2, '0')}</span>
+                            <svg class="w-2.5 h-2.5 text-slate-900/40" viewBox="0 0 100 100">
+                                <line x1="20" y1="50" x2="80" y2="50" stroke="currentColor" stroke-width="6"/>
+                                <line x1="50" y1="20" x2="50" y2="80" stroke="currentColor" stroke-width="6"/>
+                            </svg>
+                        </div>
+                    `;
+                }
+            }
+            container.innerHTML = slotsHtml;
+        }
+
+        function selectInventoryItem(name, effect) {
+            const detail = document.getElementById('inventoryDetail');
+            const detailName = document.getElementById('invDetailName');
+            const detailEffect = document.getElementById('invDetailEffect');
+            detailName.textContent = name;
+            detailEffect.textContent = effect !== 'none' ? `PASSIVE: ${(effect || '').replace(/_/g, ' ').toUpperCase()}` : 'COLLECTIBLE RUNIC ELEMENT';
+            detail.classList.remove('hidden');
+        }
+
+        function updateTimers() {
+            const now = new Date().getTime();
+            activeGates.forEach(g => {
+                const timerEl = document.getElementById(`gate-timer-${g.id}`);
+                if (!timerEl) return;
+                
+                const parts = (g.deadline || '').split('-');
+                let deadlineDate;
+                if (parts.length === 3) {
+                    deadlineDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 0, 0, 0);
+                } else {
+                    deadlineDate = new Date(g.deadline);
+                }
+
+                const diff = deadlineDate.getTime() - now;
+                if (isNaN(diff) || diff <= 0) {
+                    timerEl.textContent = 'DANGER // TIME EXPIRED // SYSTEM FAILURE IMMINENT';
+                    timerEl.className = 'text-red-500 font-mono text-xs tracking-wider font-black animate-pulse';
+                } else {
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                    let timerStr = '';
+                    if (days > 0) timerStr += `${days}D : `;
+                    timerStr += `${hours.toString().padStart(2, '0')}H : ${mins.toString().padStart(2, '0')}M : ${secs.toString().padStart(2, '0')}S`;
+                    timerEl.textContent = `TIME REMAINING: [ ${timerStr} ]`;
+                    timerEl.className = 'text-red-400 font-mono text-xs tracking-widest font-bold';
+                }
+            });
+        }
+
+        setInterval(updateTimers, 1000);
+
+        function updateClock() {
+            const now = new Date();
+            let dateToUse = now;
+            if (serverSystemDate) {
+                dateToUse = serverSystemDate;
+            }
+            const dateStr = dateToUse.toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'short', day:'numeric'});
+            const timeStr = now.toLocaleTimeString('en-US', {hour12:false});
+            document.getElementById('dateDisplay').textContent = `${dateStr.toUpperCase()} // ${timeStr}`;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        async function handleAction(promise, name) {
+            try {
+                const res = await promise;
+                if (res.status === 'success') {
+                    showSystemNotification(`${name.toUpperCase()} COMPLETED`, 'Directive processed and synced.', 'info');
+                    const playerInfo = await API.get('/api/player');
+                    
+                    if (res.level_up) {
+                        AudioSys.levelUp();
+                        document.getElementById('levelUpValue').textContent = `LVL ${playerInfo.level}`;
+                        document.getElementById('levelUpOverlay').classList.remove('hidden');
+                        flash('cyan');
+                    } else if (res.rank_up) {
+                        AudioSys.rankUp();
+                        document.getElementById('rankUpValue').textContent = playerInfo.rank;
+                        document.getElementById('rankUpOverlay').classList.remove('hidden');
+                        flash('red');
+                    }
+                    
+                    if (res.crystal) {
+                        AudioSys.crystal();
+                        document.getElementById('crystalName').textContent = res.crystal.name;
+                        document.getElementById('crystalEffect').textContent = res.crystal.effect !== 'none' ? `PASSIVE: ${(res.crystal.effect || '').replace(/_/g, ' ').toUpperCase()}` : 'COLLECTIBLE RUNIC ELEMENT';
+                        const gradient = res.crystal.type === 'rune' ? 'url(#multicrystal)' : 'url(#goldcrystal)';
+                        document.getElementById('crystalEmojiContainer').innerHTML = res.crystal.type === 'rune' ? `
+                            <svg class="w-28 h-28" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="40" fill="none" stroke="${gradient}" stroke-width="2" stroke-dasharray="10 8" opacity="0.75" style="animation: spin 12s linear infinite; transform-origin: 50px 50px;"/>
+                                <circle cx="50" cy="50" r="30" fill="none" stroke="${gradient}" stroke-width="1" stroke-opacity="0.2"/>
+                                <polygon points="50,22 74,65 26,65" fill="${gradient}" fill-opacity="0.25" stroke="${gradient}" stroke-width="2"/>
+                                <polygon points="50,78 74,35 26,35" fill="none" stroke="${gradient}" stroke-width="1.5" stroke-opacity="0.4"/>
+                                <circle cx="50" cy="50" r="4" fill="${gradient}"/>
+                            </svg>
+                        ` : `
+                            <svg class="w-28 h-28 animate-bounce" style="animation-duration: 3s;" viewBox="0 0 100 100">
+                                <polygon points="50,15 80,45 50,85 20,45" fill="${gradient}" fill-opacity="0.08" stroke="${gradient}" stroke-width="2"/>
+                                <polygon points="50,15 50,85" stroke="${gradient}" stroke-width="1" stroke-opacity="0.4"/>
+                                <polygon points="20,45 80,45" stroke="${gradient}" stroke-width="1" stroke-opacity="0.4"/>
+                                <polygon points="50,15 35,45 50,85" fill="${gradient}" fill-opacity="0.12" stroke="none"/>
+                                <polygon points="50,15 65,45 50,85" fill="${gradient}" fill-opacity="0.2" stroke="none"/>
+                                <circle cx="28" cy="28" r="2" fill="#ffffff" opacity="0.8"/>
+                                <circle cx="72" cy="72" r="2" fill="#ffffff" opacity="0.8"/>
+                            </svg>
+                        `;
+                        document.getElementById('crystalModal').classList.add('flex');
+                        document.getElementById('crystalModal').classList.remove('hidden');
+                    }
+                    loadAll();
+                } else {
+                    AudioSys.error();
+                    showSystemNotification('COMMAND REJECTED', res.output || 'Override processing failed.', 'danger');
+                }
+            } catch (e) {
+                AudioSys.error();
+                console.error(e);
+                logAdmin('Transmission error: ' + e.message, 'error');
+                showSystemNotification('TRANSMISSION ERROR', 'Failed to communicate with System modules: ' + e.message, 'danger');
+            }
+        }
+
+        function flash(color) {
+            const el = document.getElementById('flash');
+            el.className = `fixed inset-0 pointer-events-none opacity-50 z-50 transition-opacity duration-300 mix-blend-screen bg-${color}-500`;
+            setTimeout(() => el.className = `fixed inset-0 pointer-events-none opacity-0 z-50 transition-opacity duration-300 mix-blend-screen`, 60);
+        }
+
+        function closeCrystalModal() {
+            document.getElementById('crystalModal').classList.add('hidden');
+            document.getElementById('crystalModal').classList.remove('flex');
+        }
+
+        function closeLevelUp() { document.getElementById('levelUpOverlay').classList.add('hidden'); }
+        function closeRankUp() { document.getElementById('rankUpOverlay').classList.add('hidden'); }
+
+        async function completeQuest(id) { AudioSys.quest(); await handleAction(API.post(`/api/quests/${id}/complete`), 'quest'); }
+        async function completeGate(id) { AudioSys.levelUp(); await handleAction(API.post(`/api/red_gates/${id}/complete`), 'red gate'); }
+        async function completeProject(id) { AudioSys.levelUp(); await handleAction(API.post(`/api/projects/${id}/complete`), 'raid'); }
+        async function buyItem(id) { AudioSys.buy(); await handleAction(API.post(`/api/shop/${id}/buy`), 'purchase'); }
+        async function deleteQuest(id) { await handleAction(API.del(`/api/quests/${id}`), 'delete quest'); }
+        async function deleteShopItem(id) { await handleAction(API.del(`/api/shop/${id}`), 'delete shop item'); }
+
+        function openActionModal(type) {
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            const modal = document.getElementById('actionModal');
+            modal.classList.remove('hidden');
+            
+            if (type === 'quest') {
+                title.textContent = 'NEW DAILY QUEST';
+                body.innerHTML = `
+                    <form onsubmit="submitQuestForm(event)" class="flex flex-col gap-4 font-mono text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1">QUEST TITULATION</label>
+                            <input type="text" id="questTitle" required class="w-full bg-slate-900 border border-slate-800 text-white p-2 font-mono focus:border-[var(--theme-color)] focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-slate-400 mb-1">XP REWARD</label>
+                                <input type="number" id="questXp" value="20" required class="w-full bg-slate-900 border border-slate-800 text-white p-2 font-mono focus:border-[var(--theme-color)] focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">GOLD REWARD</label>
+                                <input type="number" id="questGold" value="10" required class="w-full bg-slate-900 border border-slate-800 text-white p-2 font-mono focus:border-[var(--theme-color)] focus:outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">ATTRIBUTE ALIGNMENT</label>
+                            <select id="questAttr" class="w-full bg-slate-950 border border-slate-850 text-slate-300 p-2 font-mono focus:border-[var(--theme-color)] focus:outline-none">
+                                <option value="intel">INTELLECT (INT)</option>
+                                <option value="agi">AGILITY (AGI)</option>
+                                <option value="wil">WILLPOWER (WIL)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="mt-2 py-2 theme-btn font-mono text-xs uppercase tracking-wider transition">CONFIRM QUEST</button>
+                    </form>
+                `;
+            } else if (type === 'gate') {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowStr = tomorrow.toISOString().split('T')[0];
+                title.textContent = 'OPEN RED GATE';
+                body.innerHTML = `
+                    <form onsubmit="submitGateForm(event)" class="flex flex-col gap-4 font-mono text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1">RED GATE DESIGNATION (HIGH STAKE TASK)</label>
+                            <input type="text" id="gateTitle" required class="w-full bg-slate-900 border border-slate-800 text-white p-2 font-mono focus:border-red-500 focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-slate-400 mb-1">REWARD MULTIPLIER</label>
+                                <input type="number" id="gateMult" value="5" min="1" required class="w-full bg-slate-900 border border-slate-800 text-white p-2 font-mono focus:border-red-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">FAILURE XP PENALTY</label>
+                                <input type="number" id="gatePen" value="500" min="0" required class="w-full bg-slate-900 border border-slate-800 text-white p-2 font-mono focus:border-red-500 focus:outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">DEADLINE CHRONOLOGY</label>
+                            <input type="date" id="gateDeadline" value="${tomorrowStr}" required class="w-full bg-slate-900 border border-slate-800 text-white p-2 font-mono focus:border-red-500 focus:outline-none">
+                        </div>
+                        <button type="submit" class="mt-2 py-2 border border-red-500 text-red-500 hover:bg-red-950 font-mono text-xs uppercase tracking-wider transition">COMMENCE INTRUSION</button>
+                    </form>
+                `;
+            } else if (type === 'project') {
+                const rankText = document.getElementById('playerRank').textContent || 'E-Rank';
+                const label = rankText === 'E-Rank' ? 'COMMISSION' :
+                              rankText === 'D-Rank' ? 'SKIRMISH' :
+                              rankText === 'C-Rank' ? 'DUNGEON' :
+                              rankText === 'B-Rank' ? 'SUBJUGATION' :
+                              rankText === 'A-Rank' ? 'CONQUEST' : 'S-RANK RAID';
+                title.textContent = `REGISTER ${label}`;
+                body.innerHTML = `
+                    <form onsubmit="submitProjectForm(event)" class="flex flex-col gap-4 font-mono text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1">${label} DESIGNATION</label>
+                            <input type="text" id="projTitle" required class="w-full bg-slate-900 border border-slate-800 text-white p-2 font-mono focus:border-amber-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">OBJECTIVES SPECIFICATION</label>
+                            <textarea id="projDesc" required rows="2" class="w-full bg-slate-900 border border-slate-800 text-white p-2 font-mono focus:border-amber-500 focus:outline-none"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-slate-400 mb-1">XP REWARD</label>
+                                <input type="number" id="projXp" value="1000" min="0" required class="w-full bg-slate-900 border border-slate-800 text-white p-2 font-mono focus:border-amber-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">GOLD REWARD</label>
+                                <input type="number" id="projGold" value="500" min="0" required class="w-full bg-slate-900 border border-slate-800 text-white p-2 font-mono focus:border-amber-500 focus:outline-none">
+                            </div>
+                        </div>
+                        <button type="submit" class="mt-2 py-2 border border-amber-500 text-amber-500 hover:bg-amber-950 font-mono text-xs uppercase tracking-wider transition">CONFIRM CAMPAIGN</button>
+                    </form>
+                `;
+            } else if (type === 'shop') {
+                title.textContent = 'STOCK ITEM IN SHOP';
+                body.innerHTML = `
+                    <form onsubmit="submitShopForm(event)" class="flex flex-col gap-4 font-mono text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1">COMMODITY NAME</label>
+                            <input type="text" id="shopName" required class="w-full bg-slate-900 border border-slate-800 text-white p-2 font-mono focus:border-[var(--theme-color)] focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">REVENUE VALUE (GOLD)</label>
+                            <input type="number" id="shopCost" value="50" min="1" required class="w-full bg-slate-900 border border-slate-800 text-white p-2 font-mono focus:border-[var(--theme-color)] focus:outline-none">
+                        </div>
+                        <button type="submit" class="mt-2 py-2 theme-btn font-mono text-xs uppercase tracking-wider transition">PUBLISH ITEM</button>
+                    </form>
+                `;
+            } else if (type === 'name') {
+                title.textContent = 'OVERWRITE PLAYER IDENTITY';
+                body.innerHTML = `
+                    <form onsubmit="submitNameForm(event)" class="flex flex-col gap-4 font-mono text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1">SYSTEM IDENTITY NAME</label>
+                            <input type="text" id="newNameInput" required class="w-full bg-slate-950 border border-slate-850 text-white p-2 font-mono focus:border-[var(--theme-color)] focus:outline-none">
+                        </div>
+                        <button type="submit" class="mt-2 py-2 theme-btn font-mono text-xs uppercase tracking-wider transition">APPLY NEW IDENTITY</button>
+                    </form>
+                `;
+            }
+        }
+
+        function closeActionModal() {
+            document.getElementById('actionModal').classList.add('hidden');
+        }
+
+        async function submitQuestForm(e) {
+            e.preventDefault();
+            const title = document.getElementById('questTitle').value;
+            const xp = parseInt(document.getElementById('questXp').value);
+            const gold = parseInt(document.getElementById('questGold').value);
+            const attr = document.getElementById('questAttr').value;
+            closeActionModal();
+            await handleAction(API.post('/api/quests', {title, xp_reward:xp, gold_reward:gold, attribute:attr}), 'addQuest');
+        }
+
+        async function submitGateForm(e) {
+            e.preventDefault();
+            const title = document.getElementById('gateTitle').value;
+            const mult = parseInt(document.getElementById('gateMult').value);
+            const pen = parseInt(document.getElementById('gatePen').value);
+            const dl = document.getElementById('gateDeadline').value;
+            closeActionModal();
+            await handleAction(API.post('/api/red_gates', {title, reward_multiplier:mult, penalty_amount:pen, deadline:dl}), 'addGate');
+        }
+
+        async function submitProjectForm(e) {
+            e.preventDefault();
+            const title = document.getElementById('projTitle').value;
+            const desc = document.getElementById('projDesc').value;
+            const xp = parseInt(document.getElementById('projXp').value);
+            const gold = parseInt(document.getElementById('projGold').value);
+            closeActionModal();
+            await handleAction(API.post('/api/projects', {title, description:desc, reward_xp:xp, reward_gold:gold}), 'addProject');
+        }
+
+        async function submitShopForm(e) {
+            e.preventDefault();
+            const name = document.getElementById('shopName').value;
+            const cost = parseInt(document.getElementById('shopCost').value);
+            closeActionModal();
+            await handleAction(API.post('/api/shop', {name, cost}), 'addShopItem');
+        }
+
+        async function submitNameForm(e) {
+            e.preventDefault();
+            const name = document.getElementById('newNameInput').value;
+            closeActionModal();
+            await handleAction(API.put('/api/player', {name}), 'updatePlayer');
+        }
+
+        function toggleAdmin() {
+            document.getElementById('adminConsole').classList.toggle('open');
+        }
+
+        const adminInput = document.getElementById('adminInput');
+        const autocompleteOverlay = document.getElementById('autocompleteOverlay');
+
+        adminInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            if (!val || !val.startsWith('/')) {
+                autocompleteOverlay.classList.add('hidden');
+                return;
+            }
+            const matches = COMMANDS.filter(cmd => cmd.startsWith(val));
+            if (matches.length > 0) {
+                autocompleteOverlay.innerHTML = matches.map(match => `
+                    <div onclick="selectSuggestion('${match}')" class="cursor-pointer hover:bg-green-950/60 p-1 font-mono">${match}</div>
+                `).join('');
+                autocompleteOverlay.classList.remove('hidden');
+            } else {
+                autocompleteOverlay.classList.add('hidden');
+            }
+        });
+
+        function selectSuggestion(cmd) {
+            adminInput.value = cmd + ' ';
+            adminInput.focus();
+            autocompleteOverlay.classList.add('hidden');
+        }
+
+        adminInput.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    this.value = commandHistory[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    this.value = commandHistory[historyIndex];
+                } else if (historyIndex === commandHistory.length - 1) {
+                    historyIndex++;
+                    this.value = '';
+                }
+            }
+        });
+
+        adminInput.addEventListener('keypress', async function(e) {
+            if (e.key === 'Enter') {
+                let cmd = this.value;
+                this.value = '';
+                autocompleteOverlay.classList.add('hidden');
+                if (!cmd.trim()) return;
+                
+                let checkHelp = cmd.trim();
+                if (checkHelp === '--help' || checkHelp === 'help' || checkHelp === '-h') {
+                    cmd = '/help';
+                }
+
+                commandHistory.push(cmd);
+                historyIndex = commandHistory.length;
+                logAdmin('> ' + cmd, 'input');
+                try {
+                    const res = await API.post('/admin/exec', {command: cmd});
+                    if (res.status === 'success') {
+                        logAdmin(res.output, 'success');
+                        if (res.crystal) {
+                            AudioSys.crystal();
+                            document.getElementById('crystalName').textContent = res.crystal.name;
+                            document.getElementById('crystalEffect').textContent = res.crystal.effect !== 'none' ? `PASSIVE: ${(res.crystal.effect || '').replace(/_/g, ' ').toUpperCase()}` : 'COLLECTIBLE RUNIC ELEMENT';
+                            const gradient = res.crystal.type === 'rune' ? 'url(#multicrystal)' : 'url(#goldcrystal)';
+                            document.getElementById('crystalEmojiContainer').innerHTML = res.crystal.type === 'rune' ? `
+                                <svg class="w-28 h-28" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="40" fill="none" stroke="${gradient}" stroke-width="2" stroke-dasharray="10 8" opacity="0.75" style="animation: spin 12s linear infinite; transform-origin: 50px 50px;"/>
+                                    <circle cx="50" cy="50" r="30" fill="none" stroke="${gradient}" stroke-width="1" stroke-opacity="0.2"/>
+                                    <polygon points="50,22 74,65 26,65" fill="${gradient}" fill-opacity="0.25" stroke="${gradient}" stroke-width="2"/>
+                                    <polygon points="50,78 74,35 26,35" fill="none" stroke="${gradient}" stroke-width="1.5" stroke-opacity="0.4"/>
+                                    <circle cx="50" cy="50" r="4" fill="${gradient}"/>
+                                </svg>
+                            ` : `
+                                <svg class="w-28 h-28 animate-bounce" style="animation-duration: 3s;" viewBox="0 0 100 100">
+                                    <polygon points="50,15 80,45 50,85 20,45" fill="${gradient}" fill-opacity="0.08" stroke="${gradient}" stroke-width="2"/>
+                                    <polygon points="50,15 50,85" stroke="${gradient}" stroke-width="1" stroke-opacity="0.4"/>
+                                    <polygon points="20,45 80,45" stroke="${gradient}" stroke-width="1" stroke-opacity="0.4"/>
+                                    <polygon points="50,15 35,45 50,85" fill="${gradient}" fill-opacity="0.12" stroke="none"/>
+                                    <polygon points="50,15 65,45 50,85" fill="${gradient}" fill-opacity="0.2" stroke="none"/>
+                                    <circle cx="28" cy="28" r="2" fill="#ffffff" opacity="0.8"/>
+                                    <circle cx="72" cy="72" r="2" fill="#ffffff" opacity="0.8"/>
+                                </svg>
+                            `;
+                            document.getElementById('crystalModal').classList.add('flex');
+                            document.getElementById('crystalModal').classList.remove('hidden');
+                        }
+                    } else {
+                        logAdmin(res.output || res.detail || JSON.stringify(res), 'error');
+                    }
+                    loadAll();
+                } catch(err) {
+                    console.error(err);
+                    logAdmin('Error executing command: ' + err.message, 'error');
+                }
+            }
+        });
+
+        function initParticles() {
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+            
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+            
+            const particles = [];
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: Math.random() * 1.5 + 0.5,
+                    speedY: -(Math.random() * 0.3 + 0.1),
+                    opacity: Math.random() * 0.4 + 0.1
+                });
+            }
+            
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = 'rgba(139, 92, 246, 0.55)';
+                particles.forEach(p => {
+                    p.y += p.speedY;
+                    if (p.y < 0) {
+                        p.y = height;
+                        p.x = Math.random() * width;
+                    }
+                    ctx.globalAlpha = p.opacity;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        document.addEventListener('keydown', e => { if (e.key === '`') toggleAdmin(); });
+        document.addEventListener('click', () => AudioSys.init(), { once: true });
+        document.addEventListener('keydown', () => AudioSys.init(), { once: true });
+        
+        initParticles();
+        loadAll();
+    </script>
+</body>
+</html>
