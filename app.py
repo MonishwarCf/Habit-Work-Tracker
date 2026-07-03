@@ -20,16 +20,89 @@ app.add_middleware(
 )
 templates = Jinja2Templates(directory="templates")
 
+import os
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+# --- PostgreSQL Compatibility Layer ---
+class PostgresRow:
+    def __init__(self, cursor, row):
+        self._fields = [desc[0] for desc in cursor.description]
+        self._row = row
+        self._dict = dict(zip(self._fields, row))
+        
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self._row[key]
+        return self._dict[key]
+        
+    def keys(self):
+        return self._fields
+
+class PostgresCursorWrapper:
+    def __init__(self, conn_wrapper):
+        self.cursor = conn_wrapper.conn.cursor()
+        
+    def execute(self, query, params=None):
+        # Convert SQLite style '?' placeholders to PostgreSQL style '%s'
+        query = query.replace('?', '%s')
+        # Translate AUTOINCREMENT to SERIAL
+        query = query.replace('INTEGER PRIMARY KEY AUTOINCREMENT', 'SERIAL PRIMARY KEY')
+        # Handle some basic types if needed
+        self.cursor.execute(query, params)
+        return self
+        
+    def fetchone(self):
+        row = self.cursor.fetchone()
+        if row is None:
+            return None
+        return PostgresRow(self.cursor, row)
+        
+    def fetchall(self):
+        rows = self.cursor.fetchall()
+        return [PostgresRow(self.cursor, row) for row in rows]
+        
+    def __iter__(self):
+        return (PostgresRow(self.cursor, row) for row in self.cursor)
+
+class PostgresConnectionWrapper:
+    def __init__(self, conn):
+        self.conn = conn
+        
+    def execute(self, query, params=None):
+        cursor = PostgresCursorWrapper(self)
+        cursor.execute(query, params)
+        return cursor
+        
+    def commit(self):
+        self.conn.commit()
+        
+    def close(self):
+        self.conn.close()
+
 DB_FILE = "database.db"
 
 @contextmanager
 def get_db():
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-    finally:
-        conn.close()
+    if DATABASE_URL:
+        # Import psycopg2 here so it is not required for local SQLite runs
+        import psycopg2
+        # Support postgres:// URLs (Render/Supabase use this)
+        url = DATABASE_URL
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+        conn = psycopg2.connect(url, sslmode="require")
+        try:
+            yield PostgresConnectionWrapper(conn)
+        finally:
+            conn.close()
+    else:
+        conn = sqlite3.connect(DB_FILE)
+        conn.row_factory = sqlite3.Row
+        try:
+            yield conn
+        finally:
+            conn.close()
 
 MOCK_DATE_OFFSET = 0
 
@@ -40,7 +113,7 @@ def init_db():
     with get_db() as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS player (
-                id INTEGER PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 name TEXT,
                 level INTEGER,
                 xp INTEGER,
@@ -58,7 +131,7 @@ def init_db():
         """)
         try:
             conn.execute("ALTER TABLE player ADD COLUMN last_reset_date TEXT DEFAULT ''")
-        except sqlite3.OperationalError:
+        except Exception:
             pass
         conn.execute("""
             CREATE TABLE IF NOT EXISTS quests (
