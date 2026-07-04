@@ -90,6 +90,16 @@ def get_db():
         url = DATABASE_URL
         if url.startswith("postgres://"):
             url = url.replace("postgres://", "postgresql://", 1)
+        
+        # Strip pgbouncer query parameter as it causes psycopg2/libpq connection errors
+        from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
+        try:
+            parsed = urlparse(url)
+            qparams = [(k, v) for k, v in parse_qsl(parsed.query) if k != 'pgbouncer']
+            url = urlunparse(parsed._replace(query=urlencode(qparams)))
+        except Exception:
+            pass
+
         conn = psycopg2.connect(url, sslmode="require")
         try:
             yield PostgresConnectionWrapper(conn)
