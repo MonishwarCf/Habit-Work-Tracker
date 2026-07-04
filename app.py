@@ -9,7 +9,6 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import contextmanager
 import math
-
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -129,10 +128,31 @@ def init_db():
                 last_reset_date TEXT DEFAULT ''
             )
         """)
+        # Check if last_reset_date column exists before adding it
+        has_last_reset_date = False
         try:
-            conn.execute("ALTER TABLE player ADD COLUMN last_reset_date TEXT DEFAULT ''")
+            if DATABASE_URL:
+                # For PostgreSQL, check information_schema
+                res = conn.execute("""
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_name='player' AND column_name='last_reset_date'
+                """).fetchone()
+                if res:
+                    has_last_reset_date = True
+            else:
+                # For SQLite, check table_info
+                cursor = conn.execute("PRAGMA table_info(player)")
+                columns = [row[1] for row in cursor.fetchall()]
+                if 'last_reset_date' in columns:
+                    has_last_reset_date = True
         except Exception:
             pass
+
+        if not has_last_reset_date:
+            try:
+                conn.execute("ALTER TABLE player ADD COLUMN last_reset_date TEXT DEFAULT ''")
+            except Exception:
+                pass
         conn.execute("""
             CREATE TABLE IF NOT EXISTS quests (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -287,6 +307,7 @@ def get_player():
         player = dict(conn.execute("SELECT * FROM player WHERE id = 1").fetchone())
         player['xp_required'] = calculate_xp_required(player['level'])
         player['system_date'] = get_today().isoformat()
+        player['db_type'] = "ONLINE" if DATABASE_URL else "LOCAL"
         return player
 
 @app.put("/api/player")
