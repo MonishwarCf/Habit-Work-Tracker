@@ -122,7 +122,7 @@ def init_db():
     with get_db() as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS player (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT,
                 level INTEGER,
                 xp INTEGER,
@@ -209,7 +209,11 @@ def init_db():
                 cost INTEGER
             )
         """)
-        
+        try:
+            conn.execute("UPDATE player SET id = 1 WHERE id IS NULL")
+        except Exception:
+            pass
+            
         cursor = conn.execute("SELECT COUNT(*) FROM player")
         if cursor.fetchone()[0] == 0:
             conn.execute("""
@@ -248,6 +252,11 @@ def get_rank(level: int) -> str:
 def check_daily_reset():
     with get_db() as conn:
         player = conn.execute("SELECT * FROM player WHERE id = 1").fetchone()
+        
+        # If no player exists, skip the daily reset check
+        if player is None:
+            return
+        
         today_str = get_today().isoformat()
         yesterday_str = (get_today() - timedelta(days=1)).isoformat()
 
@@ -384,8 +393,11 @@ def complete_quest(quest_id: int):
             WHERE id = 1
         """, (new_level, new_xp, new_rank, new_gold, attr_updates['intel'], attr_updates['agi'], attr_updates['wil']))
         
-        all_completed = conn.execute("SELECT COUNT(*) FROM quests WHERE is_completed = 0").fetchone()[0] == 0
-        if all_completed and player['last_completed_date'] != get_today().isoformat():
+        total_quests = conn.execute("SELECT COUNT(*) FROM quests").fetchone()[0]
+        completed_quests = conn.execute("SELECT COUNT(*) FROM quests WHERE is_completed = 1").fetchone()[0]
+        half_completed = (completed_quests >= math.ceil(total_quests / 2)) if total_quests > 0 else False
+
+        if half_completed and player['last_completed_date'] != get_today().isoformat():
             new_streak = player['streak_count'] + 1
             new_mult = min(3.0, 1.0 + (new_streak * 0.01))
             conn.execute("UPDATE player SET streak_count = ?, streak_multiplier = ?, last_completed_date = ?, missed_yesterday = 0 WHERE id = 1",
@@ -704,5 +716,5 @@ def admin_exec(data: AdminCommand):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=10000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 

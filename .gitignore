@@ -137,3 +137,4 @@ cython_debug/
 database.db
 database.db-journal
 *.db
+.env

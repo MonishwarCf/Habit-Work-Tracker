@@ -132,3 +132,30 @@ Ensure you have Python 3.8+ installed.
    ```
 5. **Open Browser:**
    Go to `http://127.0.0.1:8000` to access the System Interface.
+
+## 🤖 Model Context Protocol (MCP) Server
+
+The Solo Leveling Productivity Tracker exposes its database operations to model clients via a Model Context Protocol (MCP) server interface (`mcp_server.py`). This allows any MCP-compliant AI agent (such as Google Antigravity or Claude Desktop) to directly read your stats, view active quests, complete tasks, and buy shop items.
+
+### Exposed Tools:
+* `get_hunter_status` - Retrieve stats, levels, gold, and streaks.
+* `view_quests` - View daily quest states and reward amounts.
+* `clear_quest` - Mark a quest as completed using its integer ID.
+* `view_shop` - View items and pricing in the system shop.
+* `buy_item` - Spend gold to buy/redeem a shop item using its integer ID.
+
+### Configuration for MCP Client:
+To add this tracker to your local MCP client configuration, define the following server block:
+```json
+{
+  "mcpServers": {
+    "solo-leveling-tracker": {
+      "command": "python",
+      "args": ["C:/Users/smoni/OneDrive/DESKTOP 2/ANIT/solo-leveling-tracker/mcp_server.py"]
+    }
+  }
+}
+```
+
+
+
